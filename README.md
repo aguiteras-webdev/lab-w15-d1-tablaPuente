@@ -1,13 +1,101 @@
-tabla-puente
-Es posible, y muchas veces necesario, crear una tabla-puente que nos permita registrar una relación entre tablas. Un ejemplo típico sería la relación entre un cliente y los productos que compra. ¿Cómo evitamos que cuando vuelva a comprar se mezclen losprductos antiguos comprados con los nuevos? ¿Cómo podemos mantener un registro de lo que ha comprado cada vez? La solución sería crear una tabla-puente, la tabla pedidos. Un cliente puede tener muchos pedidos, y cada pedido puede contener diversos productos. Por tanto, pedidos contiene una clave foránea que se conecta con la clave primaria de clientes. Y, al mismo tiempo, la clave foránea de productos se conecta con la clave primaria de pedidos.
+# LAB: tabla puente y consultas multitabla
 
-*** exportar/ importar BD También vemos cómo exportar o importar BD y/o su código generativo.
+## Objetivo
 
-LABS 1- Desde cero, genera tres tablas para el podcast: usuario, descargas, podcast. Puedes generarlas desde el modelo visual EER o desde el interface habitual de WorkBench. La tabla de descargas debe guardar su momento de descarga como dato. (current_timestamp) Cómo las relacionas? Inserta registros en todas las tablas. Qué problemas encuentras? Luego, prueba a hacer consultas multi-tabla, del tipo: qué podcast se ha descargado tal cliente? Puede hacerse en grupo. Tened paciencia y realizad pruebas de ensayo y error. Al final todo sale  ;-)
+Es posible, y muchas veces necesario, crear una tabla puente que permita registrar relaciones entre dos o más tablas. Un ejemplo clásico es la relación entre un cliente y los productos que compra.
 
-2- EXTRA: *** exportar/ importar BD: TABLA EMPLEADOS (1) - discoduroderoer
+Si un cliente compra varias veces, no queremos mezclar los productos antiguos con los nuevos, ni perder el historial de compras. Por eso se crea una tabla intermedia, como por ejemplo `pedidos`, que registra cada compra y conecta clientes con productos.
 
-Ves­ a la web: https://www.discoduroderoer.es/ejercicios-propuestos-y-resueltos-de-consultas-mysql-empleados-y-departamentos/
-importa a workbench en primer lugar la base de datos propuesta, en este enlace: https://github.com/DiscoDurodeRoer/scripts-bd/blob/master/mysql/empleados_departamentos/empleados_departamentos_mysql.sql (también puedes hacer copiar y pegar el texto sql directamente en la parte SQL Queries). Cuando veas que funciona, realiza los siguientes ejercicios (hay soluciones en la web):
-seguidos: del 1 al 18
-sueltos: 24,25, 27, 28, 31 NOTA: si deseas probar otros ejercicios, para seleccionar una tabla de otra base de datos, se expresa con la bd.tabla, ejemplo:  empleados.comisionE
+En este ejercicio trabajaremos con una base de datos de podcasts:
+
+- Un usuario puede descargar muchos podcasts.
+- Un podcast puede ser descargado por muchos usuarios.
+- La relación muchos a muchos se resuelve con una tabla intermedia: `descargas`.
+
+## Enunciado
+
+### 1. Crear la base de datos y las tablas
+
+Desde cero, genera una base de datos llamada `podcast` y crea tres tablas:
+
+- `usuario`
+- `podcast`
+- `descargas`
+
+Puedes hacerlo desde el modelo EER de Workbench o desde la vista SQL habitual.
+
+### 2. Definir las relaciones
+
+La tabla `descargas` debe guardar la relación entre usuarios y podcasts, y además registrar la fecha y hora de la descarga.
+
+- `usuario` tendrá un identificador único.
+- `podcast` tendrá un identificador único.
+- `descargas` tendrá:
+  - `idusuario` como clave foránea a `usuario`
+  - `idpodcast` como clave foránea a `podcast`
+  - `fecha_descarga` con valor por defecto `CURRENT_TIMESTAMP`
+
+### 3. Insertar datos
+
+Añade registros en las tres tablas.
+
+### 4. Analizar los problemas y la lógica de la relación
+
+Tras insertar los datos, responde a estas preguntas:
+
+- ¿Qué problema aparece si intentamos guardar la relación directamente en una sola tabla?
+- ¿Por qué necesitamos una tabla puente?
+- ¿Qué ventajas tiene esta estructura para conservar el historial de descargas?
+
+### 5. Consultas multitabla
+
+Realiza consultas para obtener información combinando las tablas.
+
+Ejemplos:
+
+- ¿Qué podcast ha descargado un usuario concreto?
+- ¿Qué usuarios han descargado un podcast determinado?
+- ¿Cuáles son los podcasts más descargados?
+- ¿Cuántos minutos de contenido ha descargado cada usuario?
+
+Ejemplo de consulta posible:
+
+```sql
+SELECT
+    u.nombre AS usuario,
+    p.titulo AS podcast,
+    d.fecha_descarga
+FROM descargas d
+JOIN usuario u ON d.idusuario = u.idusuario
+JOIN podcast p ON d.idpodcast = p.idpodcast
+WHERE u.nombre = 'Laura Gómez';
+```
+
+## Importante
+
+Este ejercicio es ideal para trabajar con la relación de muchos a muchos y practicar consultas `JOIN` entre tablas.
+
+Se recomienda probar distintas consultas, hacer pruebas de ensayo y error y revisar cómo se relacionan los datos entre tablas.
+
+---
+
+## Extra opcional: importar base de datos de empleados
+
+Además, puedes practicar con la base de datos de empleados y departamentos desde la siguiente referencia:
+
+- https://www.discoduroderoer.es/ejercicios-propuestos-y-resueltos-de-consultas-mysql-empleados-y-departamentos/
+- https://github.com/DiscoDurodeRoer/scripts-bd/blob/master/mysql/empleados_departamentos/empleados_departamentos_mysql.sql
+
+Cuando la base de datos funcione, practica los ejercicios propuestos:
+
+- Seguidos: del 1 al 18
+- Sueltos: 24, 25, 27, 28, 31
+
+> Nota: para consultar una tabla de otra base de datos, se usa la notación `basededatos.tabla`.
+
+Ejemplo:
+
+```sql
+SELECT *
+FROM empleados.comisionE;
+```
